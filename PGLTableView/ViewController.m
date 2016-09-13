@@ -10,7 +10,7 @@
 #import "PGLTableView.h"
 #import "PGLTableViewCell.h"
 
-@interface ViewController () <PGLTableViewDataSource>
+@interface ViewController () <PGLTableViewDataSource, UIScrollViewDelegate>
 
 @end
 
@@ -20,23 +20,21 @@
     [super viewDidLoad];
     PGLTableView *tableView = [[PGLTableView alloc] initWithFrame:self.view.bounds];
     tableView.dataSource = self;
+    tableView.delegate = self;
     [tableView reloadData];
     [self.view addSubview:tableView];
-    // Do any additional setup after loading the view, typically from a nib.
 }
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    
-    
 }
 
 - (NSInteger)numberOfRows {
-    return 60;
+    return 61;
 }
 
 - (CGFloat)heightForRowInPGLTableView {
-    return 60;
+    return 54;
 }
 
 - (PGLTableViewCell *)pgtableView:(PGLTableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -48,9 +46,7 @@
         i++;
         NSLog(@"______%d", i);
     }
-    cell.text = [NSString stringWithFormat:@"%@", cell];
+    
     return cell;
 }
-
-
 @end

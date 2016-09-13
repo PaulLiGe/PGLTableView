@@ -11,7 +11,6 @@
 #import "PGLRowDetail.h"
 
 @interface PGLTableView ()
-//@property (nonatomic, strong) NSMutableDictionary *reusePool;
 @property (nonatomic, strong) NSMutableArray *rowRecords;
 @property (nonatomic, weak) UITableView *tableView;
 @property (nonatomic, strong) NSMutableIndexSet *visibleRows;
@@ -22,11 +21,13 @@
 @end
 
 @implementation PGLTableView
-#warning 在何时调用加载所有高度的方法最合适？
-#warning nsset跟nsarray的区别是啥？
 
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    
+    [self layoutPGLTableView];
+}
 
-#pragma mark - public
 - (PGLTableViewCell *)dequeueReusableCellWithIdentifier:(NSString *)identifier {
     PGLTableViewCell *reuseCell = nil;
     for (PGLTableViewCell *cell in self.reusePool) {
@@ -43,31 +44,24 @@
 
 - (void)reloadData {
     [self countRowsPosition];
-//    [self layoutPGLTableView];
 }
 
-#pragma mark - private
 - (void)setContentOffset:(CGPoint)contentOffset {
     [super setContentOffset:contentOffset];
 }
 
-- (void)layoutSubviews {
-    [super layoutSubviews];
-    
-    [self layoutPGLTableView];
-}
-
+#pragma mark - private
+// 布局cell
 - (void)layoutPGLTableView {
+    // 计算要显示的是哪些行
     CGFloat startY = self.contentOffset.y;
     CGFloat endY = self.contentOffset.y + self.bounds.size.height;
-    
-    NSRange range = [self searchRowNumberWillShowInPGLTableView:startY y:endY];
-    
-    for (NSUInteger i = range.location; i < range.location + range.length; i ++) {
+    NSRange range = [self numberOfRowsWillShowInPGLTableView:startY end:endY];
+    // 放置需要显示的cell
+    for (NSUInteger i = range.location; i < range.location + range.length; i++) {
         NSIndexPath *indexPath = [NSIndexPath indexPathForRow:i inSection:0];
         PGLTableViewCell *cell = [self.visibleCells objectForKey:@(i)];
         if (cell == nil) {
-            // 如果取自重用池，就从重用池出列
             cell = [self.dataSource pgtableView:self cellForRowAtIndexPath:indexPath];
             [self.visibleCells setObject:cell forKey:@(i)];
             PGLRowDetail *detail = self.rowRecords[i];
@@ -76,57 +70,20 @@
         }
         
     }
-    NSDictionary *visibleCells = [self.visibleCells copy];
     
-    
-    NSArray *allVisibleCells = [visibleCells allKeys];
+    // 移除离开屏幕的cell,同时放入重用池
+    NSArray *allVisibleCells = [self.visibleCells allKeys];
     for (NSNumber *numb in allVisibleCells) {
-        if (!NSLocationInRange([numb intValue], range)) {
+        if (!NSLocationInRange([numb integerValue], range)) {
             PGLTableViewCell *cell = [self.visibleCells objectForKey:numb];
             [self.reusePool addObject:cell];
             [self.visibleCells removeObjectForKey:numb];
             [cell removeFromSuperview];
         }
     }
-    
-    
-    
-//    for (int i = 0; i < allVisibleCells.count; i++) {
-////        NSIndexPath *indexPath = ;
-//        PGLRowDetail *detail = self.rowRecords[[allVisibleCells[i] intValue]];
-//        UITableViewCell *cell = [visibleCells objectForKey:allVisibleCells[i]];
-//        NSLog(@"%@", [NSThread currentThread]);
-//        if (detail.startY + detail.rowHeight < startY || detail.startY > endY) {
-//            
-//            [self.reusePool addObject:cell];
-//            [self.visibleCells removeObjectForKey:@(i)];
-//            [cell removeFromSuperview];
-//        }
-//    }
-    
-    
-    // 计算当下需要显示的cell的行数
-//    do {
-//        PGLRowDetail *rowDetail = self.rowRecords[rowToDisplay];
-//        UITableViewCell *cell = [self.dataSource pgtableView:self cellForRowAtIndexPath:nil];
-//        cell.frame = CGRectMake(0, rowDetail.startY, self.bounds.size.width, rowDetail.rowHeight);
-//        [self addSubview:cell];
-//        rowToDisplay++;
-//    } while ();
-    
-//    for (NSInteger i = rowToDisplay; i < self.rowRecords.count; i ++) {
-//        PGLRowDetail *rowDetail = self.rowRecords[i];
-//        if (rowDetail.startY <= endY) {
-//            UITableViewCell *cell = [self.dataSource pgtableView:self cellForRowAtIndexPath:nil];
-//            cell.frame = CGRectMake(0, rowDetail.startY, self.bounds.size.width, rowDetail.rowHeight);
-//            [self addSubview:cell];
-//        }
-//    }
-    
-
-    // 离开屏幕的放入缓存池
 }
 
+// 计算cell的行数，以及cell的开始位置和高度，同时修改scrollview的contentsize
 - (void)countRowsPosition {
     CGFloat startY = self.contentOffset.y;
     CGFloat totalHeight = startY;
@@ -148,47 +105,25 @@
     self.contentSize = CGSizeMake(self.frame.size.width, totalHeight);
 }
 
-- (void)putIntoReusePool {
+// 计算将要显示的是第几行到第几行
+- (NSRange)numberOfRowsWillShowInPGLTableView:(CGFloat)start end:(CGFloat)end {
+    PGLRowDetail *startDetail = [[PGLRowDetail alloc] init];
+    startDetail.startY = start;
+    PGLRowDetail *endDetail = [[PGLRowDetail alloc] init];
+    endDetail.startY = end;
     
-}
-
-// 计算将要显示的是第几行
-- (NSRange)searchRowNumberWillShowInPGLTableView:(CGFloat)x y:(CGFloat)y {
-    
-//    CGFloat offSetY = self.contentOffset.y;
-//    NSUInteger i = 0, j = self.rowRecords.count;
-//    NSUInteger middle = (i + j) / 2;
-//    
-//    // 二分查找
-//    do {
-//        PGLRowDetail *leftRow = self.rowRecords[i];
-//        PGLRowDetail *middleRow = self.rowRecords[middle];
-//        PGLTableView *rightRow = self.rowRecords[j];
-//        if (offSetY > middleRow.startY) {
-//            
-//        }
-//    } while (i < j);
-//
-//    return 8;
-    CGFloat startY = x;
-    CGFloat endY = y;
-    __block NSUInteger startIndex = 0;
-    __block NSUInteger endIndex = 0;
-    
-    [self.rowRecords enumerateObjectsUsingBlock:^(PGLRowDetail *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (obj.startY + obj.rowHeight > startY) {
-            startIndex = idx;
-            *stop = YES;
-        }
+    NSInteger startIndex = [self.rowRecords indexOfObject:startDetail inSortedRange:NSMakeRange(0, self.rowRecords.count) options:NSBinarySearchingInsertionIndex usingComparator:^NSComparisonResult(PGLRowDetail * obj1, PGLRowDetail * obj2) {
+        if (obj1.startY < obj2.startY) return NSOrderedAscending;
+        return NSOrderedDescending;
     }];
-
-    [self.rowRecords enumerateObjectsUsingBlock:^(PGLRowDetail *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (obj.startY + obj.rowHeight >= endY) {
-            endIndex = idx;
-            *stop = YES;
-        }
+    if (startIndex > 0) startIndex--;
+    
+    NSInteger endIndex = [self.rowRecords indexOfObject:endDetail inSortedRange:NSMakeRange(0, self.rowRecords.count - 1) options:NSBinarySearchingInsertionIndex usingComparator:^NSComparisonResult(PGLRowDetail * obj1, PGLRowDetail * obj2) {
+        if (obj1.startY < obj2.startY) return NSOrderedAscending;
+        return NSOrderedDescending;
     }];
-
+    if (endIndex > 0) endIndex--;
+    
     return NSMakeRange(startIndex, endIndex - startIndex + 1);
 }
 
@@ -213,4 +148,50 @@
     }
     return _visibleCells;
 }
+
+
+/*
+ // C语言级别的二分查找(时间复杂度可以表示O()==log2n(2为底数)=O(logn))，查找数值的左右界限
+ // 左边
+ int locationLeftIndexWithArray(float *array) {
+ int low = 0, high = sizeof(array) / sizeof(float);
+ int middle = (high+low+1)/2;
+ 
+ while (low < high) {
+ if (array[middle] >= 1.5) {
+ high = middle - 1;
+ } else if (array[middle] < 1.5) {
+ low = middle;
+ }
+ middle = (high+low+1)/2;
+ }
+ return middle;
+ }
+ // 右边
+ int locationRightIndexWithArray(float *array) {
+ int low = 0, high = 3;
+ int middle = sizeof(array) / sizeof(float);
+ 
+ while (low < high) {
+ if (array[middle] >= 1.5) {
+ high = middle;
+ } else if (array[middle] < 1.5) {
+ low = middle + 1;
+ }
+ middle = (low + high) / 2;
+ }
+ return middle;
+ }
+ // oc版本
+ - (NSInteger)indexWithArray:(NSArray *)array {
+ NSInteger index = [array indexOfObject:@8 inSortedRange:NSMakeRange(0, array.count - 1) options:NSBinarySearchingInsertionIndex usingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+ if (obj1 < obj2) {
+ return NSOrderedAscending;
+ }
+ return NSOrderedDescending;
+ }];
+ if (index == 0) return 0;
+ return index - 1;
+ }
+ */
 @end

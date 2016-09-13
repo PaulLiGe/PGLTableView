@@ -10,6 +10,7 @@
 
 @interface PGLTableViewCell ()
 @property (nonatomic, weak) UILabel *textLabel;
+@property (nonatomic, weak) UIView *separatorLine;
 @end
 
 @implementation PGLTableViewCell
@@ -17,15 +18,22 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 40, 320, 10)];
-        view.backgroundColor = [UIColor orangeColor];
-        [self addSubview:view];
-        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 20, 320, 20)];
+        UILabel *label = [[UILabel alloc] init];
         [self addSubview:label];
         self.textLabel = label;
-//        self.backgroundColor = [UIColor orangeColor];
+        
+        UIView *line = [[UIView alloc] init];
+        line.backgroundColor = [UIColor whiteColor];
+        [self addSubview:line];
+        self.separatorLine = line;
     }
     return self;
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    self.separatorLine.frame = CGRectMake(0, self.frame.size.height - .5, self.frame.size.width, .5);
+    self.textLabel.frame = CGRectMake(0, 10, self.frame.size.width, self.frame.size.height - 20);
 }
 
 - (void)setText:(NSString *)text {
