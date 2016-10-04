@@ -30,7 +30,7 @@
 }
 
 - (NSInteger)numberOfRows {
-    return 61;
+    return 1000;
 }
 
 - (CGFloat)heightForRowInPGLTableView {
