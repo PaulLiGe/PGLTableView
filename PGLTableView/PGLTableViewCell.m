@@ -32,8 +32,8 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    self.separatorLine.frame = CGRectMake(0, self.frame.size.height - .5, self.frame.size.width, .5);
-    self.textLabel.frame = CGRectMake(0, 10, self.frame.size.width, self.frame.size.height - 20);
+//    self.separatorLine.frame = CGRectMake(0, self.frame.size.height - .5, self.frame.size.width, .5);
+//    self.textLabel.frame = CGRectMake(0, 10, self.frame.size.width, self.frame.size.height - 20);
 }
 
 - (void)setText:(NSString *)text {
