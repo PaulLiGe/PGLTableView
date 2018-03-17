@@ -13,4 +13,6 @@
 @property (nonatomic, assign) CGFloat startY;
 
 @property (nonatomic, assign) CGFloat rowHeight;
+
+@property (nonatomic, assign) NSInteger sectionIndex;
 @end

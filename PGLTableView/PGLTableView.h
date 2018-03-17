@@ -11,9 +11,11 @@
 
 @protocol PGLTableViewDataSource <NSObject>
 
-- (NSInteger)numberOfRows;
+- (NSInteger)numberOfSection;
 
-- (CGFloat)heightForRowInPGLTableView;
+- (NSInteger)numberOfRowsInSection:(NSInteger)section;
+
+- (CGFloat)heightForRowInPGLTableViewIndexPath:(NSIndexPath*)indexPath;
 
 - (PGLTableViewCell *)pgtableView:(PGLTableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 
