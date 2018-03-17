@@ -23,18 +23,25 @@
     tableView.delegate = self;
     [tableView reloadData];
     [self.view addSubview:tableView];
+    
 }
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
 }
 
-- (NSInteger)numberOfRows {
-    return 1000;
+-(NSInteger)numberOfSection
+{
+    return 3;
 }
 
-- (CGFloat)heightForRowInPGLTableView {
-    return 54;
+
+- (NSInteger)numberOfRowsInSection:(NSInteger)section {
+    return 3;
+}
+
+- (CGFloat)heightForRowInPGLTableViewIndexPath:(NSIndexPath*)indexPath {
+    return 250;
 }
 
 - (PGLTableViewCell *)pgtableView:(PGLTableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -43,12 +50,11 @@
     if (cell == nil) {
         cell = [[PGLTableViewCell alloc] init];
         cell.reuseIdentifier = @"ligeceshi";
-//        CGFloat color = arc4random() % 255;
         
         i++;
-        NSLog(@"______%d", i);
+        cell.backgroundColor = [UIColor colorWithRed:arc4random() % 255 / 255.0 green:arc4random() % 255 / 255.0 blue:arc4random() % 255 / 255.0 alpha:1.0];
     }
-    cell.backgroundColor = [UIColor colorWithRed:arc4random() % 255 / 255.0 green:arc4random() % 255 / 255.0 blue:arc4random() % 255 / 255.0 alpha:1.0];
+    
     return cell;
 }
 @end

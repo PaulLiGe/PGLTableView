@@ -16,7 +16,6 @@
 @property (nonatomic, strong) NSMutableIndexSet *visibleRows;
 @property (nonatomic, strong) NSMutableDictionary *visibleCells;
 
-
 @property (nonatomic, strong) NSMutableSet *reusePool;
 @end
 
@@ -59,7 +58,7 @@
     NSRange range = [self numberOfRowsWillShowInPGLTableView:startY end:endY];
     // 放置需要显示的cell
     for (NSUInteger i = range.location; i < range.location + range.length; i++) {
-        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:i inSection:0];
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:i inSection:[((PGLRowDetail*)[self.rowRecords objectAtIndex:i]) sectionIndex]];
         PGLTableViewCell *cell = [self.visibleCells objectForKey:@(i)];
         if (cell == nil) {
             cell = [self.dataSource pgtableView:self cellForRowAtIndexPath:indexPath];
@@ -67,6 +66,7 @@
             PGLRowDetail *detail = self.rowRecords[i];
             cell.frame = CGRectMake(0, detail.startY, self.frame.size.width, detail.rowHeight);
             [self addSubview:cell];
+            [self sendSubviewToBack:cell];//防止一开始cell会挡住滚动条
         }
         
     }
@@ -85,21 +85,37 @@
 
 // 计算cell的行数，以及cell的开始位置和高度，同时修改scrollview的contentsize
 - (void)countRowsPosition {
+    
+    [self.rowRecords removeAllObjects];//reloadData需要移除rowRecords之前存在的row
+    
     CGFloat startY = self.contentOffset.y;
     CGFloat totalHeight = startY;
-    if ([self.dataSource respondsToSelector:@selector(numberOfRows)]) {
-        NSInteger rowCount = [self.dataSource numberOfRows];
-        for (int i = 0; i < rowCount; i++) {
-            CGFloat height = 44;
-            if ([self.dataSource respondsToSelector:@selector(heightForRowInPGLTableView)]) {
-                height = [self.dataSource heightForRowInPGLTableView];
+    
+    
+    NSInteger numSection = 1;
+    if([self.dataSource respondsToSelector:@selector(numberOfSection)])
+    {
+        numSection = [self.dataSource numberOfSection];
+    }
+    
+    for(NSInteger sectionIndex = 0; sectionIndex < numSection;sectionIndex++)
+    {
+        if ([self.dataSource respondsToSelector:@selector(numberOfRowsInSection:)]) {
+            NSInteger rowCount = [self.dataSource numberOfRowsInSection:sectionIndex];
+            
+            for (int i = 0; i < rowCount; i++) {
+                CGFloat height = 44;
+                if ([self.dataSource respondsToSelector:@selector(heightForRowInPGLTableViewIndexPath:)]) {
+                    height = [self.dataSource heightForRowInPGLTableViewIndexPath:[NSIndexPath indexPathForRow:i inSection:sectionIndex]];
+                }
+                totalHeight += height;
+                PGLRowDetail *rowDetail = [[PGLRowDetail alloc] init];
+                rowDetail.startY = startY;
+                rowDetail.rowHeight = height;
+                rowDetail.sectionIndex = sectionIndex;
+                startY = startY + height;
+                [self.rowRecords addObject:rowDetail];
             }
-            totalHeight += height;
-            PGLRowDetail *rowDetail = [[PGLRowDetail alloc] init];
-            rowDetail.startY = startY;
-            rowDetail.rowHeight = height;
-            startY = startY + height;
-            [self.rowRecords addObject:rowDetail];
         }
     }
     self.contentSize = CGSizeMake(self.frame.size.width, totalHeight);
@@ -122,10 +138,11 @@
         if (obj1.startY < obj2.startY) return NSOrderedAscending;
         return NSOrderedDescending;
     }];
-    if (endIndex > 0) endIndex--;
+    //    if (endIndex > 0) endIndex--; //防止cell少一行
     
     return NSMakeRange(startIndex, endIndex - startIndex + 1);
 }
+
 
 #pragma mark - property
 - (NSMutableSet *)reusePool {
