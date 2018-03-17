@@ -67,6 +67,7 @@
             PGLRowDetail *detail = self.rowRecords[i];
             cell.frame = CGRectMake(0, detail.startY, self.frame.size.width, detail.rowHeight);
             [self addSubview:cell];
+            [self sendSubviewToBack:cell];//防止一开始cell会挡住滚动条
         }
         
     }
@@ -122,7 +123,7 @@
         if (obj1.startY < obj2.startY) return NSOrderedAscending;
         return NSOrderedDescending;
     }];
-    if (endIndex > 0) endIndex--;
+//    if (endIndex > 0) endIndex--; //防止cell少一行
     
     return NSMakeRange(startIndex, endIndex - startIndex + 1);
 }
